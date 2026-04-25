@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: trackwise
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn app_flask:app"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: ANTHROPIC_API_KEY
+        sync: false # Requires manual setup in the Render Dashboard
