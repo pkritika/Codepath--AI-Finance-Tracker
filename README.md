@@ -57,3 +57,71 @@ graph TD
 ### Human-in-the-Loop & System Testing
 * **Reliability Check:** The `reliability_check.py` and `tests/` module acts as our evaluator. It runs rigorous assertions against ground-truth datasets to ensure the AI categorization maintains high accuracy and doesn't hallucinate categories.
 * **Human Verification:** On the frontend, humans are involved at the final stage. While the agent autonomously builds the budget plan, the UI explicitly highlights "Agent Verifications" and "Warnings" (e.g., flagging ambitious cuts). The human user acts as the final decision-maker reviewing the AI's proposed financial constraints.
+
+## Setup Instructions
+To run this project locally, follow these steps:
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/[your-username]/ai-finance-tracker.git
+   cd ai-finance-tracker
+   ```
+
+2. **Create a virtual environment (optional but recommended):**
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate  # On Windows use: venv\Scripts\activate
+   ```
+
+3. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Set your Anthropic API Key:**
+   Export your Claude API key to your environment variables:
+   ```bash
+   export ANTHROPIC_API_KEY="your-api-key-here"
+   ```
+
+5. **Run the Flask Backend:**
+   ```bash
+   python3 app_flask.py
+   ```
+   Open your modern browser to `http://127.0.0.1:5000` to interact with the dashboard.
+
+## Sample Interactions
+Here are a few examples showcasing the system in action:
+
+**Interaction 1: Uploading a PDF Statement**
+* **User Input:** Uploads a PDF bank statement containing vague transactions like "AMZN FRESH" ($80.50), "NFLX" ($15.99), and "UBER EATS" ($24.00).
+* **AI Output:** The Categorization Agent logically infers the merchants and flawlessly structures these into JSON, mapping them to `Groceries`, `Subscriptions`, and `Food & Dining`, instantly populating the dashboard graphs.
+
+**Interaction 2: Requesting a Budget Plan**
+* **User Input:** Sets a savings goal of "$300/month" on the Budget Plan Agent tab.
+* **AI Output (Agentic Reasoning):**
+   - *Plan:* "Identifies top cuttable categories: Food & Dining ($180) and Shopping ($200)."
+   - *Act:* "Proposes cutting Food & Dining to $100 and Shopping to $50."
+   - *Check (Self-Verification):* "Calculates savings: $80 + $150 = $230... Goal not met. Proposes cutting Subscriptions from $90 to $20 to reach the $300 goal. Wait, an $70 cut from $90 is 77%."
+   - *Final Output:* Displays the actionable cut plan on the UI but flags it with a warning: `⚠️ Ambitious: Subscriptions cut is >50%`.
+
+## Design Decisions
+When architecting TrackWise AI, I prioritized an **Agentic Workflow over simple prompt generation**. Rather than a zero-shot prompt predicting a budget cut, the core Agent splits tasks into *Plan → Act → Check*. 
+* **Trade-off:** This requires larger token context and slightly longer API processing times (around 3 to 5 seconds).
+* **Why:** The increase in processing time is entirely worth it for the leap in reliability and safety. In financial technology, adding an autonomous verification loop ensures the user gets realistic, mathematically trustworthy advice rather than hallucinated numbers. 
+
+Additionally, I implemented local session persistence instead of a heavy PostgreSQL database. This ensures lightweight, lightning-fast prototyping while keeping the app entirely private for the user's sensitive banking session data.
+
+## Testing Summary
+**What worked:**
+* The transition from unstructured PDF tables to structured pandas DataFrames worked seamlessly with the Anthropic Model. Claude handled edge cases like weird merchant string names ("AMZN MKTP US") without any failure.
+* The Agentic Check step consistently caught mathematical errors and accurately flagged unrealistic savings goals.
+
+**What didn't:**
+* Initial zero-shot categorization suffered from minor hallucinations where Claude created its own custom umbrella categories (e.g., grouping Netflix and Spotify under a new category called "Digital Content" instead of the required "Subscriptions"). 
+* **Fix/Learned:** I resolved this by strongly constraining the prompt, passing a strict enum array of required dashboard categories within the system instruction. This proved that strict schema mapping is necessary for LLMs inside production pipelines.
+
+## Reflection
+This project profoundly shifted how I view applied Artificial Intelligence. I learned that building a robust AI product is less about prompt-engineering a magic answer, and vastly more about **system engineering**: creating robust pipelines, data validation loops, and UI guardrails. 
+
+Implementing the "Check" phase in the agentic workflow taught me the importance of self-correction. Instead of assuming the model's first mathematical output was true, adding an autonomous verification loop drastically increased the trustworthiness of my application. I'm incredibly proud of how the final project bridges the gap between raw, messy data and a beautiful, actionable user experience.
