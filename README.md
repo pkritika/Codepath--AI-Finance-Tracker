@@ -113,13 +113,72 @@ When architecting TrackWise AI, I prioritized an **Agentic Workflow over simple 
 Additionally, I implemented local session persistence instead of a heavy PostgreSQL database. This ensures lightweight, lightning-fast prototyping while keeping the app entirely private for the user's sensitive banking session data.
 
 ## Testing Summary
-**What worked:**
-* The transition from unstructured PDF tables to structured pandas DataFrames worked seamlessly with the Anthropic Model. Claude handled edge cases like weird merchant string names ("AMZN MKTP US") without any failure.
-* The Agentic Check step consistently caught mathematical errors and accurately flagged unrealistic savings goals.
 
-**What didn't:**
-* Initial zero-shot categorization suffered from minor hallucinations where Claude created its own custom umbrella categories (e.g., grouping Netflix and Spotify under a new category called "Digital Content" instead of the required "Subscriptions"). 
-* **Fix/Learned:** I resolved this by strongly constraining the prompt, passing a strict enum array of required dashboard categories within the system instruction. This proved that strict schema mapping is necessary for LLMs inside production pipelines.
+This project uses **four distinct layers** of reliability testing to prove the AI works — not just seem like it does.
+
+### Layer 1 — Automated Unit Tests (`tests/`)
+Run the full test suite with:
+```bash
+pytest tests/ -v
+```
+Four test modules cover the entire stack:
+- **`test_categorizer.py`** — asserts the AI maps known merchant names to correct categories
+- **`test_pdf_parser.py`** — verifies extracted transaction tables are correctly structured
+- **`test_api.py`** — checks all Flask endpoints return the right status codes and JSON shapes
+- **`test_routes.py`** — ensures routing and session handling work correctly
+
+### Layer 2 — AI Consistency & Accuracy Scoring (`reliability_check.py`)
+A custom reliability harness runs **10 labeled ground-truth transactions through Claude 3 separate times** and measures two scores:
+
+```bash
+python3 reliability_check.py
+```
+
+**Sample output:**
+```
+======================================================================
+  TrackWise AI Reliability Check
+======================================================================
+  Transactions : 10   Runs : 3   Model : claude-sonnet-4-20250514
+
+#   Transaction              Expected         Run1             Run2             Run3             Status
+--- ------------------------ ---------------- ---------------- ---------------- ---------------- -------
+1   STARBUCKS #12345         Food & Dining    Food & Dining    Food & Dining    Food & Dining    [PASS]
+2   SHELL GAS STATION        Transport        Transport        Transport        Transport        [PASS]
+3   SPOTIFY PREMIUM          Subscriptions    Subscriptions    Subscriptions    Subscriptions    [PASS]
+...
+
+  Consistency (all 3 runs agree) : 10/10  ->  100%
+  Accuracy (matches expected)    : 10/10  ->  100%
+  Consistency : [PERFECT]
+  Accuracy    : [GOOD]
+```
+
+- **Consistency** measures whether Claude gives the same answer across 3 independent calls (tests for hallucination drift)
+- **Accuracy** measures whether the mode answer matches our human-labeled ground truth
+
+### Layer 3 — Error Handling & Logging
+Every AI call is wrapped in structured error handling. Failures never crash the UI — instead users receive informative JSON error messages:
+```python
+# Example from categorizer.py
+except json.JSONDecodeError as e:
+    print(f"Insights JSON parse error: {e}")
+    return ["Insights temporarily unavailable — check your spending distribution above."]
+```
+
+### Layer 4 — Human-in-the-Loop Verification (Budget Agent)
+The Budget Planning Agent's final output includes a visible **🤖 Agent Verification** panel on the dashboard. Claude explicitly reports:
+- Whether the savings total was mathematically verified
+- Which specific categories it flagged as "Ambitious" (>50% cuts)
+- Natural-language notes about its own reasoning
+
+This ensures a human always reviews the AI's financial recommendations before acting on them.
+
+---
+
+**What worked:** Claude's categorization at `temperature=0` proved highly deterministic — running the same transactions 3 times consistently returned identical results, scoring 100% on the reliability check.
+
+**What didn't initially:** Early zero-shot prompts allowed Claude to invent its own categories (e.g., "Digital Content" instead of "Subscriptions"). **Fix:** Injecting a strict enum of allowed categories into the system prompt resolved this immediately — a key lesson about LLM schema enforcement in production systems.
 
 ## Reflection
 This project profoundly shifted how I view applied Artificial Intelligence. I learned that building a robust AI product is less about prompt-engineering a magic answer, and vastly more about **system engineering**: creating robust pipelines, data validation loops, and UI guardrails. 
