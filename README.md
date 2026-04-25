@@ -114,6 +114,8 @@ Additionally, I implemented local session persistence instead of a heavy Postgre
 
 ## Testing Summary
 
+> **TL;DR:** 4 out of 4 unit test suites passed seamlessly; however, the AI initially struggled when categorization constraints were loose. Accuracy and confidence consistency reached a perfect 100% across all tests only after enforcing strict Enum validation rules.
+
 This project uses **four distinct layers** of reliability testing to prove the AI works — not just seem like it does.
 
 ### Layer 1 — Automated Unit Tests (`tests/`)
