@@ -188,15 +188,13 @@
         </div>
       </div>
 
-      <!-- Loading state -->
-      <div class="dash-ai-card hidden" id="budgetLoading">
-        <div class="dash-ai-left">
-          <div class="dash-insights-spinner" style="width:18px;height:18px"></div>
-          <div>
-            <div class="dash-ai-title">Agent is working...</div>
-            <div class="dash-ai-desc" id="budgetLoadingText">Step 1 — Analysing your spending patterns</div>
-          </div>
+      <!-- Agent Thinking Log (visible while loading, persists after) -->
+      <div class="agent-log hidden" id="agentThinkingLog">
+        <div class="agent-log-header">
+          <span class="agent-log-dot" id="agentLogDot"></span>
+          <span class="agent-log-title">Agent Reasoning Log</span>
         </div>
+        <div class="agent-log-body" id="agentLogBody"></div>
       </div>
 
       <!-- Plan Results (hidden until generated) -->

@@ -557,9 +557,18 @@ def generate_budget_plan(
         "STEP 3 — CHECK: Sum all savings. Verify the total meets the savings goal. "
         "Flag any cut that requires more than 50% reduction as ambitious.\n\n"
 
-        "STEP 4 — OUTPUT: Return ONLY a valid JSON object (no markdown, no explanation) "
+        "STEP 4 — VERIFY: Write 2-4 short natural-language notes explaining your reasoning, "
+        "any warnings, and whether the plan is realistic overall.\n\n"
+
+        "Return ONLY a valid JSON object (no markdown, no explanation) "
         "with this exact structure:\n"
         "{\n"
+        '  "thinking_steps": [\n'
+        '    {"phase": "PLAN", "note": "what you identified in step 1"},\n'
+        '    {"phase": "ACT",  "note": "what cuts you proposed and why"},\n'
+        '    {"phase": "CHECK", "note": "whether total meets goal and math check"},\n'
+        '    {"phase": "VERIFY", "note": "final assessment and any warnings"}\n'
+        '  ],\n'
         '  "cuts": [\n'
         '    {\n'
         '      "category": "string",\n'
@@ -578,6 +587,8 @@ def generate_budget_plan(
         '    "agent_notes": ["note1", "note2"]\n'
         "  }\n"
         "}\n\n"
+        "thinking_steps must have exactly 4 entries, one per phase. "
+        "Each note should be 1-2 sentences of real reasoning, not generic text. "
         "realistic = true means the cut is <= 50% of current spending. "
         "A cut > 50% must set realistic = false and add the category to ambitious_categories."
     )
@@ -613,6 +624,7 @@ def generate_budget_plan(
         plan = json.loads(text)
 
         # Ensure mandatory keys exist
+        plan.setdefault("thinking_steps", [])
         plan.setdefault("cuts", [])
         plan.setdefault("total_saving", sum(c.get("saving", 0) for c in plan["cuts"]))
         plan.setdefault("goal_met", plan["total_saving"] >= savings_goal)

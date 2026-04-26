@@ -570,11 +570,34 @@ function switchTab(tab) {
 }
 
 // ── BUDGET PLAN AGENT ────────────────────────────────────────────────
+const PHASE_META = {
+  PLAN:   { icon: '🔍', label: 'PLAN',   color: '#9b8fff' },
+  ACT:    { icon: '⚙️', label: 'ACT',    color: '#d4f244' },
+  CHECK:  { icon: '🧮', label: 'CHECK',  color: '#60c8ff' },
+  VERIFY: { icon: '✅', label: 'VERIFY', color: '#4ade80' },
+};
+
+function appendLogStep(phase, note, pending = false) {
+  const logBody = document.getElementById('agentLogBody');
+  const meta    = PHASE_META[phase] || { icon: '•', label: phase, color: '#888' };
+
+  const row = document.createElement('div');
+  row.className = 'agent-log-row' + (pending ? ' agent-log-row--pending' : '');
+  row.innerHTML = `
+    <span class="agent-log-phase" style="color:${meta.color}">${meta.icon} ${meta.label}</span>
+    <span class="agent-log-note">${pending ? '<span class="agent-log-typing"></span>' : note}</span>
+  `;
+  logBody.appendChild(row);
+  logBody.scrollTop = logBody.scrollHeight;
+  return row;
+}
+
 function fetchBudgetPlan() {
   const goalInput  = document.getElementById('savingsGoalInput');
   const btn        = document.getElementById('btnBudgetPlan');
-  const loading    = document.getElementById('budgetLoading');
-  const loadText   = document.getElementById('budgetLoadingText');
+  const logPanel   = document.getElementById('agentThinkingLog');
+  const logDot     = document.getElementById('agentLogDot');
+  const logBody    = document.getElementById('agentLogBody');
   const results    = document.getElementById('budgetResults');
   const errorEl    = document.getElementById('budgetError');
 
@@ -586,27 +609,24 @@ function fetchBudgetPlan() {
     return;
   }
 
-  // Reset
+  // Reset UI
   btn.disabled = true;
   btn.textContent = 'Working...';
-  loading.classList.remove('hidden');
+  logBody.innerHTML = '';
+  logPanel.classList.remove('hidden');
+  logDot.classList.add('agent-log-dot--active');
   results.classList.add('hidden');
   errorEl.classList.add('hidden');
-  errorEl.textContent = '';
 
-  // Cycle step messages to show the agent reasoning visually
-  const steps = [
-    'Step 1 — Analysing your spending patterns...',
-    'Step 2 — Identifying cuttable categories...',
-    'Step 3 — Building your personalised cut plan...',
-    'Step 4 — Verifying totals and flagging ambitious targets...'
-  ];
-  let stepIdx = 0;
-  loadText.textContent = steps[0];
-  const stepInterval = setInterval(() => {
-    stepIdx = (stepIdx + 1) % steps.length;
-    loadText.textContent = steps[stepIdx];
-  }, 3000);
+  // While waiting, show placeholder pending rows one by one
+  const phases = ['PLAN', 'ACT', 'CHECK', 'VERIFY'];
+  const pendingRows = [];
+  phases.forEach((phase, i) => {
+    setTimeout(() => {
+      const row = appendLogStep(phase, '', true);
+      pendingRows.push(row);
+    }, i * 900);
+  });
 
   fetch('/api/budget-plan', {
     method: 'POST',
@@ -615,25 +635,39 @@ function fetchBudgetPlan() {
   })
     .then(r => r.json())
     .then(data => {
-      clearInterval(stepInterval);
-      loading.classList.add('hidden');
       btn.disabled = false;
       btn.textContent = 'Regenerate Plan →';
+      logDot.classList.remove('agent-log-dot--active');
 
       if (data.error) {
+        logPanel.classList.add('hidden');
         errorEl.textContent = data.error;
         errorEl.classList.remove('hidden');
         return;
       }
 
-      renderBudgetPlan(data, goal);
-      results.classList.remove('hidden');
+      // Clear placeholder rows and replay REAL steps from Claude
+      logBody.innerHTML = '';
+      const steps = (data.thinking_steps && data.thinking_steps.length)
+        ? data.thinking_steps
+        : phases.map(p => ({ phase: p, note: 'Analysis complete.' }));
+
+      let delay = 0;
+      steps.forEach(step => {
+        setTimeout(() => appendLogStep(step.phase, step.note), delay);
+        delay += 600;
+      });
+
+      // Show final plan after all steps have rendered
+      setTimeout(() => {
+        renderBudgetPlan(data, goal);
+        results.classList.remove('hidden');
+      }, delay + 200);
     })
     .catch(err => {
-      clearInterval(stepInterval);
-      loading.classList.add('hidden');
       btn.disabled = false;
       btn.textContent = 'Retry →';
+      logDot.classList.remove('agent-log-dot--active');
       errorEl.textContent = 'Request failed: ' + err.message;
       errorEl.classList.remove('hidden');
     });

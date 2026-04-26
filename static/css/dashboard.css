@@ -869,3 +869,115 @@
 .verif-ok   { background: rgba(212, 242, 68, 0.07); color: rgba(212,242,68,0.85); }
 .verif-warn { background: rgba(255, 179, 71, 0.08); color: #FFB347; }
 .verif-note { background: rgba(255,255,255,0.04);   color: rgba(250,247,240,0.6); }
+
+/* ═══════════════════════════════════════════════════════════════════════ */
+/* AGENT REASONING LOG PANEL                                               */
+/* ═══════════════════════════════════════════════════════════════════════ */
+
+.agent-log {
+  background: rgba(10, 10, 8, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 16px;
+  padding: 18px 20px;
+  margin-bottom: 16px;
+  font-family: 'DM Mono', 'Fira Code', 'Courier New', monospace;
+}
+
+.agent-log-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.agent-log-title {
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(250, 247, 240, 0.3);
+  font-family: 'Cabinet Grotesk', sans-serif;
+}
+
+/* Live / done indicator dot */
+.agent-log-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  flex-shrink: 0;
+  transition: background 0.3s;
+}
+
+.agent-log-dot--active {
+  background: var(--lime);
+  box-shadow: 0 0 0 3px rgba(212, 242, 68, 0.2);
+  animation: logDotPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes logDotPulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(212, 242, 68, 0.2); }
+  50%       { box-shadow: 0 0 0 6px rgba(212, 242, 68, 0.05); }
+}
+
+.agent-log-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 220px;
+  overflow-y: auto;
+  scrollbar-width: none;          /* Firefox */
+}
+.agent-log-body::-webkit-scrollbar { display: none; }
+
+/* Each reasoning row */
+.agent-log-row {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  animation: logRowFadeIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes logRowFadeIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.agent-log-phase {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  padding-top: 1px;
+  min-width: 62px;               /* keep all rows aligned */
+  font-family: 'Cabinet Grotesk', sans-serif;
+}
+
+.agent-log-note {
+  font-size: 0.78rem;
+  color: rgba(250, 247, 240, 0.6);
+  line-height: 1.55;
+  letter-spacing: 0.01em;
+}
+
+/* Pending row (while waiting for API) */
+.agent-log-row--pending .agent-log-note {
+  color: rgba(250, 247, 240, 0.2);
+}
+
+/* CSS typing cursor for pending rows */
+.agent-log-typing::after {
+  content: '▋';
+  display: inline-block;
+  animation: typingBlink 0.9s step-end infinite;
+  color: rgba(212, 242, 68, 0.5);
+  font-size: 0.82rem;
+  vertical-align: baseline;
+}
+
+@keyframes typingBlink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
