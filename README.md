@@ -58,6 +58,11 @@ graph TD
 * **Reliability Check:** The `reliability_check.py` and `tests/` module acts as our evaluator. It runs rigorous assertions against ground-truth datasets to ensure the AI categorization maintains high accuracy and doesn't hallucinate categories.
 * **Human Verification:** On the frontend, humans are involved at the final stage. While the agent autonomously builds the budget plan, the UI explicitly highlights "Agent Verifications" and "Warnings" (e.g., flagging ambitious cuts). The human user acts as the final decision-maker reviewing the AI's proposed financial constraints.
 
+## Stretch Feature: Observable Agentic Reasoning
+To fulfill the **Agentic Workflow Enhancement** stretch goal, the Budget Planning Agent was upgraded to implement multi-step reasoning with observable intermediate steps. 
+
+Instead of masking the AI's processing time behind a generic loading spinner, the system prompt explicitly requires Claude to structure its reasoning into a 4-step chain: `PLAN → ACT → CHECK → VERIFY`. During generation, a specialized UI panel (the "Agent Reasoning Log") surfaces this decision-making chain. It reveals Claude's actual underlying thought process—such as exactly how it identified targets, performed math checks, and verified safety constraints—directly to the frontend before outputting the final JSON plan. This transforms a "black box" generation into a highly transparent, trustworthy, and observable workflow.
+
 ## Setup Instructions
 To run this project locally, follow these steps:
 
