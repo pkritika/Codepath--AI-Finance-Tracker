@@ -8,8 +8,12 @@ The original project was a standard personal finance dashboard designed to manua
 **TrackWise AI Finance Tracker** transforms passive expense tracking into an active, intelligent financial assistant. By leveraging large language models (Claude) via an Agentic Workflow, this project eliminates the tedious chore of manual categorization. Simply upload a raw bank statement PDF, and the AI automatically extracts, categorizes, analyzes, and plans. It matters because it bridges the gap between raw data and actionable financial advice—creating a "set it and forget it" experience that dynamically builds personalized budget plans and catches irregular spending without manual human intervention.
 
 ## 🎥 End-to-End System Demo 
-<div style="position: relative; padding-bottom: 50%; height: 0;"><iframe src="https://www.loom.com/embed/19eccb46c6214c2ba3ff3ba17972dcb1" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe></div>
-*(The video above demonstrates uploading raw PDFs, generating a categorized budget, and showcases the AI's observable intermediate reasoning steps).*
+<div>
+    <a href="https://www.loom.com/share/19eccb46c6214c2ba3ff3ba17972dcb1">
+      <img style="max-width:300px;" src="https://cdn.loom.com/sessions/thumbnails/19eccb46c6214c2ba3ff3ba17972dcb1-a2544f80aac1abb2-full-play.gif#t=0.1">
+    </a>
+  </div>
+The video above demonstrates uploading raw PDFs, generating a categorized budget, and showcases the AI's observable intermediate reasoning steps.
 
 ## Architecture Overview
 
