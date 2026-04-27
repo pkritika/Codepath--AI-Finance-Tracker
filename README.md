@@ -7,6 +7,10 @@ The original project was a standard personal finance dashboard designed to manua
 ## Title and Summary
 **TrackWise AI Finance Tracker** transforms passive expense tracking into an active, intelligent financial assistant. By leveraging large language models (Claude) via an Agentic Workflow, this project eliminates the tedious chore of manual categorization. Simply upload a raw bank statement PDF, and the AI automatically extracts, categorizes, analyzes, and plans. It matters because it bridges the gap between raw data and actionable financial advice—creating a "set it and forget it" experience that dynamically builds personalized budget plans and catches irregular spending without manual human intervention.
 
+## 🎥 End-to-End System Demo 
+**[INSERT YOUR LOOM LINK HERE]**
+*(The video above demonstrates uploading raw PDFs, generating a categorized budget, and showcases the AI's observable intermediate reasoning steps).*
+
 ## Architecture Overview
 
 The system is built on a Python Flask backend and a dynamic Vanilla JS/CSS frontend interface. The AI pipeline runs sequentially through a series of specialized nodes.
